@@ -1,0 +1,57 @@
+Sub CalculateStockDataAcrossWorksheets()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim i As Long
+    Dim openPrice As Double
+    Dim closePrice As Double
+    Dim yearlyChange As Double
+    Dim percentChange As Double
+    Dim totalVolume As Double
+    Dim maxPercentIncrease As Double
+    Dim minPercentDecrease As Double
+    Dim maxTotalVolume As Double
+    Dim maxPercentIncreaseTicker As String
+    Dim minPercentDecreaseTicker As String
+    Dim maxTotalVolumeTicker As String
+
+    maxPercentIncrease = -9999999
+    minPercentDecrease = 9999999
+    maxTotalVolume = -9999999
+
+    For Each ws In ThisWorkbook.Worksheets
+        lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+
+        For i = 2 To lastRow
+            openPrice = ws.Cells(i, 3).Value
+            closePrice = ws.Cells(i, 6).Value
+
+            yearlyChange = closePrice - openPrice
+
+            If openPrice <> 0 Then
+                percentChange = (yearlyChange / openPrice) * 100
+            Else
+                percentChange = 0
+            End If
+
+            totalVolume = ws.Cells(i, 7).Value
+
+            If percentChange > maxPercentIncrease Then
+                maxPercentIncrease = percentChange
+                maxPercentIncreaseTicker = ws.Cells(i, 1).Value
+            ElseIf percentChange < minPercentDecrease Then
+                minPercentDecrease = percentChange
+                minPercentDecreaseTicker = ws.Cells(i, 1).Value
+            End If
+
+            If totalVolume > maxTotalVolume Then
+                maxTotalVolume = totalVolume
+                maxTotalVolumeTicker = ws.Cells(i, 1).Value
+            End If
+        Next i
+    Next ws
+
+    Sheets("2018").Range("O2").Value = maxPercentIncreaseTicker & " (" & Format(maxPercentIncrease, "0.00") & "%)"
+    Sheets("2018").Range("O3").Value = minPercentDecreaseTicker & " (" & Format(minPercentDecrease, "0.00") & "%)"
+    Sheets("2018").Range("O4").Value = maxTotalVolumeTicker & " (" & Format(maxTotalVolume, "#,##0") & " shares)"
+End Sub
+
